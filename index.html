@@ -85,6 +85,8 @@ footer{margin-top:30px;padding-top:16px;border-top:1px solid #e4ddd4;font-size:1
 // ╚══════════════════════════════════════════════════════════╝
 const SUPABASE_URL = "https://gbgkdiblnvdnhaesdsor.supabase.co";
 const SUPABASE_KEY = "sb_publishable_ZCjOjxocZpRQVSLdJrBrGQ_79r1y85V";
+// Contraseña de acceso a la app. Cámbiala por una palabra propia (NO uses una importante).
+const APP_PASSWORD = "espai2026";
 // ────────────────────────────────────────────────────────────
 
 const STAGES=[{id:"lead",label:"Lead recibido"},{id:"contactada",label:"Contactada"},{id:"reservada",label:"Sesión reservada"},{id:"cliente",label:"Cliente activa"}];
@@ -102,8 +104,24 @@ async function start(){
   if(SUPABASE_URL.startsWith("PEGA") || SUPABASE_KEY.startsWith("PEGA")){
     document.getElementById("app").innerHTML = setupScreen(); return;
   }
+  if(sessionStorage.getItem("eb_auth") !== APP_PASSWORD){
+    document.getElementById("app").innerHTML = loginScreen(); return;
+  }
   sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   await loadAll(); render();
+}
+function loginScreen(){
+  return `<header><div class="eyebrow">Espai Batit · València</div><h1>Programa de fallas</h1></header>
+  <div class="setup"><h2>Acceso</h2>
+  <p class="hint">Introduce la contraseña para entrar.</p>
+  <div class="field"><span>Contraseña</span><input id="pwd" type="password" autofocus onkeydown="if(event.key==='Enter')tryLogin()"></div>
+  <button class="btn" style="width:100%" onclick="tryLogin()">Entrar</button>
+  <p class="hint" id="pwderr" style="color:#c0392b;display:none;margin-top:10px">Contraseña incorrecta.</p></div>`;
+}
+function tryLogin(){
+  const v=document.getElementById("pwd").value;
+  if(v===APP_PASSWORD){ sessionStorage.setItem("eb_auth",v); start(); }
+  else { document.getElementById("pwderr").style.display="block"; }
 }
 function setupScreen(){
   return `<header><div class="eyebrow">Espai Batit · València</div><h1>Programa de fallas</h1></header>
@@ -165,7 +183,8 @@ async function removeShop(id){
 
 // ── Render ──
 function render(){document.getElementById("app").innerHTML=header()+nav()+bodyHtml()+footer();}
-function header(){return `<header><div class="eyebrow">Espai Batit · València</div><h1>Programa de fallas</h1><div class="synced">✓ Sincronizado en la nube</div></header>`;}
+function header(){return `<header><div class="eyebrow">Espai Batit · València</div><h1>Programa de fallas</h1><div class="synced">✓ Sincronizado en la nube · <a href="#" onclick="logout();return false" style="color:var(--accent)">Salir</a></div></header>`;}
+function logout(){ sessionStorage.removeItem("eb_auth"); location.reload(); }
 
 // ── Exportar CSV (compatible con Google Sheets) ──
 function csvCell(v){
