@@ -16,6 +16,9 @@ header{position:sticky;top:0;background:var(--bg);padding:16px 0 12px;border-bot
 .eyebrow{text-transform:uppercase;letter-spacing:.18em;font-size:10px;font-weight:600;color:var(--accent);}
 h1{font-family:'Fraunces',Georgia,serif;font-size:26px;margin:2px 0 0;font-weight:600;}
 .synced{font-size:11px;color:var(--muted);margin-top:6px;}
+.io{display:flex;gap:8px;margin-top:10px;}
+.io button{flex:1;background:transparent;border:1px solid #cfc6ba;border-radius:8px;padding:8px;font-size:13px;font-weight:600;color:var(--ink);}
+.io button:active{background:#f0ebe2;}
 nav{display:flex;gap:4px;margin:14px 0 18px;}
 nav button{flex:1;background:transparent;border:none;padding:9px 4px;border-radius:8px;font-size:13px;font-weight:600;color:var(--muted);}
 nav button.active{background:var(--black);color:#fff;}
@@ -163,6 +166,52 @@ async function removeShop(id){
 // ── Render ──
 function render(){document.getElementById("app").innerHTML=header()+nav()+bodyHtml()+footer();}
 function header(){return `<header><div class="eyebrow">Espai Batit · València</div><h1>Programa de fallas</h1><div class="synced">✓ Sincronizado en la nube</div></header>`;}
+
+// ── Exportar CSV (compatible con Google Sheets) ──
+function csvCell(v){
+  v = v==null ? "" : String(v);
+  if(/[",\n]/.test(v)) v = '"'+v.replace(/"/g,'""')+'"';
+  return v;
+}
+function downloadCSV(rows, filename){
+  const csv = rows.map(r=>r.map(csvCell).join(",")).join("\n");
+  const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url; a.download=filename; a.click();
+  URL.revokeObjectURL(url);
+  toast("CSV descargado");
+}
+function exportClientsCSV(){
+  const head=["Cliente","Tel\u00e9fono","Email","Tienda","Etapa","Fecha sesi\u00f3n","Tipo","Importe \u20ac","Comisi\u00f3n %","Comisi\u00f3n \u20ac","Cobrada","Comisi\u00f3n pagada"];
+  const rows=[head];
+  data.clients.forEach(c=>{
+    const sh=shopById(c.shop_id);
+    const cs=sessionsFor(c.id);
+    if(cs.length===0){
+      rows.push([c.name,c.phone,c.email,sh?sh.name:"",stageLabel(c.stage),"","","",sh?sh.commission:"","","",""]);
+    } else {
+      cs.forEach(s=>{
+        rows.push([c.name,c.phone,c.email,sh?sh.name:"",stageLabel(c.stage),s.date||"",s.type,Number(s.amount)||0,sh?sh.commission:"",commissionFor(s).toFixed(2),s.paid?"S\u00ed":"No",s.commission_paid?"S\u00ed":"No"]);
+      });
+    }
+  });
+  downloadCSV(rows, "espai-batit-clientes-"+today()+".csv");
+}
+function exportShopsCSV(){
+  const head=["Tienda","Contacto","Tel\u00e9fono","Comisi\u00f3n %","Precio especial \u20ac","Clientes","Sesiones","Facturado \u20ac","Comisi\u00f3n total \u20ac","Comisi\u00f3n por pagar \u20ac","Notas"];
+  const rows=[head];
+  data.shops.forEach(sh=>{
+    const cl=data.clients.filter(c=>c.shop_id===sh.id);
+    const ids=new Set(cl.map(c=>c.id));
+    const ss=data.sessions.filter(s=>ids.has(s.client_id));
+    const billed=ss.reduce((a,s)=>a+(Number(s.amount)||0),0);
+    const commTotal=ss.reduce((a,s)=>a+commissionFor(s),0);
+    const commOwed=ss.filter(s=>!s.commission_paid).reduce((a,s)=>a+commissionFor(s),0);
+    rows.push([sh.name,sh.contact,sh.phone,sh.commission,sh.special,cl.length,ss.length,billed.toFixed(2),commTotal.toFixed(2),commOwed.toFixed(2),sh.notes]);
+  });
+  downloadCSV(rows, "espai-batit-tiendas-"+today()+".csv");
+}
 function nav(){const t=[["panel","Panel"],["clients","Clientes"],["shops","Tiendas"]];return `<nav>`+t.map(([id,l])=>`<button class="${view.tab===id?'active':''}" onclick="go('${id}')">${l}</button>`).join("")+`</nav>`;}
 function go(tab){view.tab=tab;view.clientId=null;render();}
 function openClient(id){view.clientId=id;render();}
@@ -184,7 +233,7 @@ function clientList(){
     const cs=sessionsFor(c.id);const billed=cs.reduce((a,s)=>a+(Number(s.amount)||0),0);const sh=shopById(c.shop_id);
     return `<div class="row" onclick="openClient('${c.id}')"><div class="rowMain"><div class="rowName">${esc(c.name)}</div><div class="rowSub">${esc(c.phone||'sin teléfono')} · ${esc(sh?sh.name:'sin tienda')}</div><div style="margin-top:6px"><span class="chip chip-${c.stage}">${stageLabel(c.stage)}</span></div></div><div class="rowRight"><div class="rowAmt">${euro(billed)}</div><div class="rowSub">${cs.length} ses.</div></div></div>`;
   }).join("");
-  return `<div class="sectionHead"><h2>Clientes</h2><button class="btn" ${data.shops.length?'':'disabled'} onclick="addClient()">+ Cliente</button></div>${data.shops.length?"":'<p class="hint">Primero crea una tienda en «Tiendas».</p>'}<div class="list">${rows||'<div class="empty">Sin clientes. Pulsa «+ Cliente».</div>'}</div>`;
+  return `<div class="sectionHead"><h2>Clientes</h2><div style="display:flex;gap:8px"><button class="btn" style="background:transparent;color:var(--ink);border:1px solid #cfc6ba" ${data.clients.length?'':'disabled'} onclick="exportClientsCSV()">CSV</button><button class="btn" ${data.shops.length?'':'disabled'} onclick="addClient()">+ Cliente</button></div></div>${data.shops.length?"":'<p class="hint">Primero crea una tienda en «Tiendas».</p>'}<div class="list">${rows||'<div class="empty">Sin clientes. Pulsa «+ Cliente».</div>'}</div>`;
 }
 function clientFicha(){
   const c=clientById(view.clientId);if(!c){view.clientId=null;return clientList();}
@@ -196,7 +245,7 @@ function clientFicha(){
 }
 function shopList(){
   const cards=data.shops.map(s=>`<div class="card"><div class="field"><span>Tienda</span><input value="${esc(s.name)}" onchange="updateShop('${s.id}',{name:this.value}).then(render)"></div><div class="row2"><div class="field"><span>Contacto</span><input value="${esc(s.contact)}" onchange="updateShop('${s.id}',{contact:this.value})"></div><div class="field"><span>Teléfono</span><input type="tel" value="${esc(s.phone)}" onchange="updateShop('${s.id}',{phone:this.value})"></div></div><div class="row2"><div class="field"><span>Comisión %</span><input type="number" inputmode="decimal" value="${s.commission}" onchange="updateShop('${s.id}',{commission:Number(this.value)}).then(render)"></div><div class="field"><span>Precio especial €</span><input type="number" inputmode="decimal" value="${s.special}" onchange="updateShop('${s.id}',{special:Number(this.value)})"></div></div><div class="field" style="margin-bottom:8px"><span>Notas</span><textarea rows="2" onchange="updateShop('${s.id}',{notes:this.value})">${esc(s.notes)}</textarea></div><button class="delBig" onclick="removeShop('${s.id}')">Eliminar tienda</button></div>`).join("");
-  return `<div class="sectionHead"><h2>Tiendas socias</h2><button class="btn" onclick="addShop()">+ Tienda</button></div><div class="list">${cards||'<div class="empty">Sin tiendas.</div>'}</div>`;
+  return `<div class="sectionHead"><h2>Tiendas socias</h2><div style="display:flex;gap:8px"><button class="btn" style="background:transparent;color:var(--ink);border:1px solid #cfc6ba" ${data.shops.length?'':'disabled'} onclick="exportShopsCSV()">CSV</button><button class="btn" onclick="addShop()">+ Tienda</button></div></div><div class="list">${cards||'<div class="empty">Sin tiendas.</div>'}</div>`;
 }
 function footer(){return `<footer>Espai Batit · Datos sincronizados en Supabase.<br>Accesible desde cualquier dispositivo con el enlace.</footer>`;}
 
