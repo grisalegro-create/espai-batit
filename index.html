@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#1a1a1a">
+<title>Espai Batit · Fallas</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#faf7f2;--ink:#2a2320;--muted:#8a8178;--line:#ece5da;--accent:#b3402a;--accentDark:#982f1c;--black:#1a1a1a;--card:#fff;}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:'Inter',system-ui,sans-serif;}
+body{padding:0 14px 90px;max-width:560px;margin:0 auto;}
+input,select,textarea,button{font-family:inherit;}
+header{position:sticky;top:0;background:var(--bg);padding:16px 0 12px;border-bottom:2px solid var(--black);z-index:10;}
+.eyebrow{text-transform:uppercase;letter-spacing:.18em;font-size:10px;font-weight:600;color:var(--accent);}
+h1{font-family:'Fraunces',Georgia,serif;font-size:26px;margin:2px 0 0;font-weight:600;}
+.synced{font-size:11px;color:var(--muted);margin-top:6px;}
+nav{display:flex;gap:4px;margin:14px 0 18px;}
+nav button{flex:1;background:transparent;border:none;padding:9px 4px;border-radius:8px;font-size:13px;font-weight:600;color:var(--muted);}
+nav button.active{background:var(--black);color:#fff;}
+h2{font-family:'Fraunces',Georgia,serif;font-size:19px;font-weight:600;margin:0 0 12px;}
+.sectionHead{display:flex;justify-content:space-between;align-items:center;margin:20px 0 12px;}
+.btn{background:var(--accent);color:#fff;border:none;padding:10px 16px;border-radius:8px;font-weight:600;font-size:14px;}
+.btn:active{background:var(--accentDark);}
+.btn:disabled{opacity:.4;}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;}
+.stat.accent{background:var(--black);color:#fff;border-color:var(--black);grid-column:1 / -1;}
+.statLabel{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:6px;}
+.stat.accent .statLabel{color:#c9b8a8;}
+.statValue{font-family:'Fraunces',Georgia,serif;font-size:24px;font-weight:600;}
+.miniRow{display:flex;gap:10px;margin-bottom:24px;}
+.mini{flex:1;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;display:flex;align-items:baseline;gap:8px;}
+.miniVal{font-family:'Fraunces',Georgia,serif;font-size:20px;font-weight:600;}
+.miniLbl{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);}
+.list{display:flex;flex-direction:column;gap:8px;}
+.row{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;justify-content:space-between;align-items:center;gap:10px;}
+.row:active{background:#fbf7f0;}
+.rowMain{min-width:0;}
+.rowName{font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rowSub{font-size:13px;color:var(--muted);margin-top:2px;}
+.rowRight{text-align:right;flex-shrink:0;}
+.rowAmt{font-family:'Fraunces',Georgia,serif;font-weight:600;}
+.chip{font-size:10px;padding:3px 8px;border-radius:20px;font-weight:600;display:inline-block;}
+.chip-lead{background:#f0ebe2;color:#8a8178;}.chip-contactada{background:#fdf0d5;color:#9a6a00;}
+.chip-reservada{background:#e3edf7;color:#2c5f8a;}.chip-cliente{background:#e4f2e4;color:#2e7d32;}
+.empty{text-align:center;color:var(--muted);font-style:italic;padding:30px 14px;background:var(--card);border:1px dashed var(--line);border-radius:12px;}
+.hint{color:var(--muted);font-size:13px;margin:0 0 12px;}
+.field{display:block;margin-bottom:12px;}
+.field>span{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:4px;}
+.field input,.field select,.field textarea{width:100%;border:1px solid #e4ddd4;background:var(--bg);padding:11px 12px;border-radius:8px;font-size:16px;color:var(--ink);}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--accent);background:#fff;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:6px;}
+.back{background:none;border:none;color:var(--accent);font-size:14px;font-weight:600;padding:0 0 14px;}
+.sessCard{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:8px;}
+.sessHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.sessHead .del{background:none;border:none;color:#c0392b;font-size:13px;font-weight:600;padding:4px;}
+.checks{display:flex;gap:16px;margin-top:8px;}
+.check{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);}
+.check input{width:18px;height:18px;}
+.delBig{width:100%;background:#fbeae7;color:#c0392b;border:none;padding:12px;border-radius:8px;font-weight:600;font-size:14px;margin-top:8px;}
+footer{margin-top:30px;padding-top:16px;border-top:1px solid #e4ddd4;font-size:12px;color:var(--muted);text-align:center;}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--black);color:#fff;padding:10px 20px;border-radius:30px;font-size:13px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:50;}
+.toast.show{opacity:1;}
+.setup{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px;margin-top:20px;}
+.setup code{background:#f5f0e8;padding:2px 6px;border-radius:4px;font-size:13px;}
+.loader{text-align:center;padding:40px;color:var(--muted);}
+</style>
+</head>
+<body>
+<div id="app"><div class="loader">Cargando…</div></div>
+<div class="toast" id="toast"></div>
+
+<!-- Cliente oficial de Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ╔══════════════════════════════════════════════════════════╗
+// ║  CONFIGURACIÓN — pega aquí tus dos valores de Supabase     ║
+// ║  (Project Settings → API)                                  ║
+// ╚══════════════════════════════════════════════════════════╝
+const SUPABASE_URL = "https://gbgkdiblnvdnhaesdsor.supabase.co/rest/v1/";
+const SUPABASE_KEY = "sb_publishable_ZCjOjxocZpRQVSLdJrBrGQ_79r1y85V";
+// ────────────────────────────────────────────────────────────
+
+const STAGES=[{id:"lead",label:"Lead recibido"},{id:"contactada",label:"Contactada"},{id:"reservada",label:"Sesión reservada"},{id:"cliente",label:"Cliente activa"}];
+const euro=n=>new Intl.NumberFormat("es-ES",{style:"currency",currency:"EUR"}).format(n||0);
+const esc=s=>(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const today=()=>new Date().toISOString().slice(0,10);
+
+let sb=null, data={shops:[],clients:[],sessions:[]}, view={tab:"panel",clientId:null};
+
+let toastTimer;
+function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove("show"),1400);}
+
+// ── Arranque ──
+async function start(){
+  if(SUPABASE_URL.startsWith("PEGA") || SUPABASE_KEY.startsWith("PEGA")){
+    document.getElementById("app").innerHTML = setupScreen(); return;
+  }
+  sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  await loadAll(); render();
+}
+function setupScreen(){
+  return `<header><div class="eyebrow">Espai Batit · València</div><h1>Programa de fallas</h1></header>
+  <div class="setup"><h2>Falta configurar Supabase</h2>
+  <p class="hint">Abre el archivo <code>index.html</code> y pega tus dos valores de Supabase en las líneas marcadas (<code>SUPABASE_URL</code> y <code>SUPABASE_KEY</code>). Los encuentras en tu proyecto: <strong>Project Settings → API</strong>.</p>
+  <p class="hint">Cuando los pegues y vuelvas a subir el archivo, esta pantalla desaparecerá.</p></div>`;
+}
+
+// ── Carga desde la base ──
+async function loadAll(){
+  const [sh,cl,se] = await Promise.all([
+    sb.from("shops").select("*").order("name"),
+    sb.from("clients").select("*").order("name"),
+    sb.from("sessions").select("*").order("date",{ascending:false}),
+  ]);
+  if(sh.error||cl.error||se.error){ toast("Error al cargar"); console.error(sh.error||cl.error||se.error); return; }
+  data.shops=sh.data; data.clients=cl.data; data.sessions=se.data;
+}
+
+// ── Helpers ──
+const shopById=id=>data.shops.find(s=>s.id===id);
+const clientById=id=>data.clients.find(c=>c.id===id);
+const stageLabel=id=>(STAGES.find(s=>s.id===id)||{}).label||id;
+function commissionFor(se){const c=clientById(se.client_id);if(!c)return 0;const sh=shopById(c.shop_id);if(!sh)return 0;return (Number(se.amount)*sh.commission)/100;}
+const sessionsFor=cid=>data.sessions.filter(s=>s.client_id===cid).sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+
+// ── Operaciones con la base ──
+async function dbInsert(table,obj){const{data:d,error}=await sb.from(table).insert(obj).select().single();if(error){toast("Error al guardar");console.error(error);return null;}return d;}
+async function dbUpdate(table,id,patch){const{error}=await sb.from(table).update(patch).eq("id",id);if(error){toast("Error al guardar");console.error(error);}else toast("Guardado");}
+async function dbDelete(table,id){const{error}=await sb.from(table).delete().eq("id",id);if(error){toast("Error al borrar");console.error(error);}}
+
+async function addClient(){
+  const c=await dbInsert("clients",{name:"Nueva clienta",phone:"",email:"",shop_id:(data.shops[0]||{}).id||null,stage:"lead",notes:""});
+  if(c){data.clients.push(c);view.tab="clients";view.clientId=c.id;render();}
+}
+async function updateClient(id,patch){Object.assign(clientById(id),patch);await dbUpdate("clients",id,patch);}
+async function removeClient(id){
+  if(!confirm("¿Eliminar la clienta y todas sus sesiones?"))return;
+  await sb.from("sessions").delete().eq("client_id",id);
+  await dbDelete("clients",id);
+  data.clients=data.clients.filter(c=>c.id!==id);data.sessions=data.sessions.filter(s=>s.client_id!==id);
+  view.clientId=null;render();
+}
+async function addSession(cid){
+  const s=await dbInsert("sessions",{client_id:cid,date:today(),type:"Sesión fotográfica",amount:0,paid:false,commission_paid:false});
+  if(s){data.sessions.push(s);render();}
+}
+async function updateSession(id,patch){Object.assign(data.sessions.find(s=>s.id===id),patch);await dbUpdate("sessions",id,patch);}
+async function removeSession(id){await dbDelete("sessions",id);data.sessions=data.sessions.filter(s=>s.id!==id);render();}
+async function addShop(){const s=await dbInsert("shops",{name:"Nueva tienda",contact:"",phone:"",commission:15,special:0,notes:""});if(s){data.shops.push(s);render();}}
+async function updateShop(id,patch){Object.assign(shopById(id),patch);await dbUpdate("shops",id,patch);}
+async function removeShop(id){
+  if(!confirm("¿Eliminar la tienda? Sus clientes quedarán sin tienda."))return;
+  await dbDelete("shops",id);
+  data.shops=data.shops.filter(s=>s.id!==id);
+  data.clients.forEach(c=>{if(c.shop_id===id)c.shop_id=null;});
+  render();
+}
+
+// ── Render ──
+function render(){document.getElementById("app").innerHTML=header()+nav()+bodyHtml()+footer();}
+function header(){return `<header><div class="eyebrow">Espai Batit · València</div><h1>Programa de fallas</h1><div class="synced">✓ Sincronizado en la nube</div></header>`;}
+function nav(){const t=[["panel","Panel"],["clients","Clientes"],["shops","Tiendas"]];return `<nav>`+t.map(([id,l])=>`<button class="${view.tab===id?'active':''}" onclick="go('${id}')">${l}</button>`).join("")+`</nav>`;}
+function go(tab){view.tab=tab;view.clientId=null;render();}
+function openClient(id){view.clientId=id;render();}
+function bodyHtml(){if(view.tab==="panel")return panel();if(view.tab==="clients")return view.clientId?clientFicha():clientList();if(view.tab==="shops")return shopList();return "";}
+
+function panel(){
+  let revenue=0,owed=0,paid=0;
+  data.sessions.forEach(s=>{revenue+=Number(s.amount)||0;const c=commissionFor(s);s.commission_paid?paid+=c:owed+=c;});
+  const rows=data.shops.map(sh=>{
+    const cl=data.clients.filter(c=>c.shop_id===sh.id);const ids=new Set(cl.map(c=>c.id));
+    const ss=data.sessions.filter(s=>ids.has(s.client_id));
+    const o=ss.filter(s=>!s.commission_paid).reduce((a,s)=>a+commissionFor(s),0);
+    return `<div class="row"><div class="rowMain"><div class="rowName">${esc(sh.name)}</div><div class="rowSub">${sh.commission}% · ${cl.length} clientes · ${ss.length} sesiones</div></div><div class="rowRight"><div class="rowAmt" style="color:${o>0?'var(--accent)':'inherit'}">${euro(o)}</div><div class="rowSub">por pagar</div></div></div>`;
+  }).join("");
+  return `<div class="cards"><div class="stat accent"><div class="statLabel">Facturación total</div><div class="statValue">${euro(revenue)}</div></div><div class="stat"><div class="statLabel">Comisiones por pagar</div><div class="statValue">${euro(owed)}</div></div><div class="stat"><div class="statLabel">Comisiones pagadas</div><div class="statValue">${euro(paid)}</div></div></div><div class="miniRow"><div class="mini"><span class="miniVal">${data.clients.length}</span><span class="miniLbl">Clientes</span></div><div class="mini"><span class="miniVal">${data.sessions.length}</span><span class="miniLbl">Sesiones</span></div></div><h2>Resumen por tienda</h2><div class="list">${rows||'<div class="empty">Añade tu primera tienda socia.</div>'}</div>`;
+}
+function clientList(){
+  const rows=data.clients.map(c=>{
+    const cs=sessionsFor(c.id);const billed=cs.reduce((a,s)=>a+(Number(s.amount)||0),0);const sh=shopById(c.shop_id);
+    return `<div class="row" onclick="openClient('${c.id}')"><div class="rowMain"><div class="rowName">${esc(c.name)}</div><div class="rowSub">${esc(c.phone||'sin teléfono')} · ${esc(sh?sh.name:'sin tienda')}</div><div style="margin-top:6px"><span class="chip chip-${c.stage}">${stageLabel(c.stage)}</span></div></div><div class="rowRight"><div class="rowAmt">${euro(billed)}</div><div class="rowSub">${cs.length} ses.</div></div></div>`;
+  }).join("");
+  return `<div class="sectionHead"><h2>Clientes</h2><button class="btn" ${data.shops.length?'':'disabled'} onclick="addClient()">+ Cliente</button></div>${data.shops.length?"":'<p class="hint">Primero crea una tienda en «Tiendas».</p>'}<div class="list">${rows||'<div class="empty">Sin clientes. Pulsa «+ Cliente».</div>'}</div>`;
+}
+function clientFicha(){
+  const c=clientById(view.clientId);if(!c){view.clientId=null;return clientList();}
+  const cs=sessionsFor(c.id);const billed=cs.reduce((a,s)=>a+(Number(s.amount)||0),0);
+  const shopOpts=['<option value="">— Sin tienda —</option>'].concat(data.shops.map(s=>`<option value="${s.id}" ${s.id===c.shop_id?'selected':''}>${esc(s.name)}</option>`)).join("");
+  const stageOpts=STAGES.map(s=>`<option value="${s.id}" ${s.id===c.stage?'selected':''}>${s.label}</option>`).join("");
+  const sess=cs.map(s=>`<div class="sessCard"><div class="sessHead"><strong>${euro(s.amount)}</strong><button class="del" onclick="removeSession('${s.id}')">Eliminar</button></div><div class="field" style="margin-bottom:8px"><span>Fecha</span><input type="date" value="${s.date||''}" onchange="updateSession('${s.id}',{date:this.value})"></div><div class="field" style="margin-bottom:8px"><span>Tipo de sesión</span><input value="${esc(s.type)}" onchange="updateSession('${s.id}',{type:this.value})"></div><div class="field" style="margin-bottom:0"><span>Importe (€)</span><input type="number" inputmode="decimal" value="${s.amount}" onchange="updateSession('${s.id}',{amount:Number(this.value)}).then(render)"></div><div class="checks"><label class="check"><input type="checkbox" ${s.paid?'checked':''} onchange="updateSession('${s.id}',{paid:this.checked})"> Cobrada</label><label class="check"><input type="checkbox" ${s.commission_paid?'checked':''} onchange="updateSession('${s.id}',{commission_paid:this.checked}).then(render)"> Comisión pagada</label></div><div class="rowSub" style="margin-top:8px">Comisión tienda: ${euro(commissionFor(s))}</div></div>`).join("");
+  return `<button class="back" onclick="view.clientId=null;render()">‹ Volver a clientes</button><div class="card"><div class="field"><span>Nombre</span><input value="${esc(c.name)}" onchange="updateClient('${c.id}',{name:this.value}).then(render)"></div><div class="row2"><div class="field"><span>Teléfono</span><input type="tel" value="${esc(c.phone)}" placeholder="600 00 00 00" onchange="updateClient('${c.id}',{phone:this.value})"></div><div class="field"><span>Email</span><input type="email" value="${esc(c.email)}" placeholder="nombre@email.com" onchange="updateClient('${c.id}',{email:this.value})"></div></div><div class="row2"><div class="field"><span>Tienda de origen</span><select onchange="updateClient('${c.id}',{shop_id:this.value||null}).then(render)">${shopOpts}</select></div><div class="field"><span>Etapa</span><select onchange="updateClient('${c.id}',{stage:this.value}).then(render)">${stageOpts}</select></div></div><div class="field" style="margin-bottom:0"><span>Notas</span><textarea rows="2" onchange="updateClient('${c.id}',{notes:this.value})">${esc(c.notes)}</textarea></div></div><div class="sectionHead"><h2>Sesiones</h2><button class="btn" onclick="addSession('${c.id}')">+ Sesión</button></div>${sess||'<div class="empty">Sin sesiones. Pulsa «+ Sesión».</div>'}${cs.length?`<div class="card" style="margin-top:8px;display:flex;justify-content:space-between"><strong>Total facturado</strong><strong>${euro(billed)}</strong></div>`:""}<button class="delBig" onclick="removeClient('${c.id}')">Eliminar clienta</button>`;
+}
+function shopList(){
+  const cards=data.shops.map(s=>`<div class="card"><div class="field"><span>Tienda</span><input value="${esc(s.name)}" onchange="updateShop('${s.id}',{name:this.value}).then(render)"></div><div class="row2"><div class="field"><span>Contacto</span><input value="${esc(s.contact)}" onchange="updateShop('${s.id}',{contact:this.value})"></div><div class="field"><span>Teléfono</span><input type="tel" value="${esc(s.phone)}" onchange="updateShop('${s.id}',{phone:this.value})"></div></div><div class="row2"><div class="field"><span>Comisión %</span><input type="number" inputmode="decimal" value="${s.commission}" onchange="updateShop('${s.id}',{commission:Number(this.value)}).then(render)"></div><div class="field"><span>Precio especial €</span><input type="number" inputmode="decimal" value="${s.special}" onchange="updateShop('${s.id}',{special:Number(this.value)})"></div></div><div class="field" style="margin-bottom:8px"><span>Notas</span><textarea rows="2" onchange="updateShop('${s.id}',{notes:this.value})">${esc(s.notes)}</textarea></div><button class="delBig" onclick="removeShop('${s.id}')">Eliminar tienda</button></div>`).join("");
+  return `<div class="sectionHead"><h2>Tiendas socias</h2><button class="btn" onclick="addShop()">+ Tienda</button></div><div class="list">${cards||'<div class="empty">Sin tiendas.</div>'}</div>`;
+}
+function footer(){return `<footer>Espai Batit · Datos sincronizados en Supabase.<br>Accesible desde cualquier dispositivo con el enlace.</footer>`;}
+
+start();
+</script>
+</body>
+</html>
