@@ -50,6 +50,8 @@ h2{font-family:'Fraunces',Georgia,serif;font-size:19px;font-weight:600;margin:0 
 .chip-reservada{background:#e3edf7;color:#2c5f8a;}.chip-cliente{background:#e4f2e4;color:#2e7d32;}
 .empty{text-align:center;color:var(--muted);font-style:italic;padding:30px 14px;background:var(--card);border:1px dashed var(--line);border-radius:12px;}
 .hint{color:var(--muted);font-size:13px;margin:0 0 12px;}
+.fbtn{background:transparent;border:1px solid #e4ddd4;border-radius:20px;padding:6px 12px;font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap;}
+.fbtn:active,.factive{background:var(--black);color:#fff;border-color:var(--black);}
 .field{display:block;margin-bottom:12px;}
 .field>span{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:4px;}
 .field input,.field select,.field textarea{width:100%;border:1px solid #e4ddd4;background:var(--bg);padding:11px 12px;border-radius:8px;font-size:16px;color:var(--ink);}
@@ -86,10 +88,19 @@ footer{margin-top:30px;padding-top:16px;border-top:1px solid #e4ddd4;font-size:1
 const SUPABASE_URL = "https://gbgkdiblnvdnhaesdsor.supabase.co";
 const SUPABASE_KEY = "sb_publishable_ZCjOjxocZpRQVSLdJrBrGQ_79r1y85V";
 // Contraseña de acceso a la app. Cámbiala por una palabra propia (NO uses una importante).
-const APP_PASSWORD = "espai2026";
+const APP_PASSWORD = "fallas2026";
 // ────────────────────────────────────────────────────────────
 
 const STAGES=[{id:"lead",label:"Lead recibido"},{id:"contactada",label:"Contactada"},{id:"reservada",label:"Sesión reservada"},{id:"cliente",label:"Cliente activa"}];
+const FUNNEL=[
+  {id:"contactar",label:"Por contactar",color:"#f0ebe2",text:"#8a8178"},
+  {id:"contactada",label:"Contactada",color:"#fdf0d5",text:"#9a6a00"},
+  {id:"reunion",label:"Reunión planificada",color:"#e3edf7",text:"#2c5f8a"},
+  {id:"realizada",label:"Reunión realizada",color:"#ede3f7",text:"#6a2c8a"},
+  {id:"socia",label:"Socia activa",color:"#e4f2e4",text:"#2e7d32"},
+  {id:"descartada",label:"Descartada",color:"#f7e3e3",text:"#8a2c2c"},
+];
+const funnelById=id=>FUNNEL.find(f=>f.id===id)||FUNNEL[0];
 const euro=n=>new Intl.NumberFormat("es-ES",{style:"currency",currency:"EUR"}).format(n||0);
 const esc=s=>(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const today=()=>new Date().toISOString().slice(0,10);
@@ -171,14 +182,14 @@ async function addSession(cid){
 }
 async function updateSession(id,patch){Object.assign(data.sessions.find(s=>s.id===id),patch);await dbUpdate("sessions",id,patch);}
 async function removeSession(id){await dbDelete("sessions",id);data.sessions=data.sessions.filter(s=>s.id!==id);render();}
-async function addShop(){const s=await dbInsert("shops",{name:"Nueva tienda",contact:"",phone:"",commission:15,special:0,notes:""});if(s){data.shops.push(s);render();}}
+async function addShop(){const s=await dbInsert("shops",{name:"Nueva tienda",contact:"",phone:"",instagram:"",commission:15,special:0,notes:"",funnel_stage:"contactar",meeting_date:null,last_contact:today()});if(s){data.shops.push(s);openShopId=s.id;render();}}
 async function updateShop(id,patch){Object.assign(shopById(id),patch);await dbUpdate("shops",id,patch);}
 async function removeShop(id){
   if(!confirm("¿Eliminar la tienda? Sus clientes quedarán sin tienda."))return;
   await dbDelete("shops",id);
   data.shops=data.shops.filter(s=>s.id!==id);
   data.clients.forEach(c=>{if(c.shop_id===id)c.shop_id=null;});
-  render();
+  openShopId=null; render();
 }
 
 // ── Render ──
@@ -234,7 +245,7 @@ function exportShopsCSV(){
 function nav(){const t=[["panel","Panel"],["clients","Clientes"],["shops","Tiendas"]];return `<nav>`+t.map(([id,l])=>`<button class="${view.tab===id?'active':''}" onclick="go('${id}')">${l}</button>`).join("")+`</nav>`;}
 function go(tab){view.tab=tab;view.clientId=null;render();}
 function openClient(id){view.clientId=id;render();}
-function bodyHtml(){if(view.tab==="panel")return panel();if(view.tab==="clients")return view.clientId?clientFicha():clientList();if(view.tab==="shops")return shopList();return "";}
+function bodyHtml(){if(view.tab==="panel")return panel();if(view.tab==="clients")return view.clientId?clientFicha():clientList();if(view.tab==="shops")return openShopId?shopFicha():shopList();return "";}
 
 function panel(){
   let revenue=0,owed=0,paid=0;
@@ -262,9 +273,84 @@ function clientFicha(){
   const sess=cs.map(s=>`<div class="sessCard"><div class="sessHead"><strong>${euro(s.amount)}</strong><button class="del" onclick="removeSession('${s.id}')">Eliminar</button></div><div class="field" style="margin-bottom:8px"><span>Fecha</span><input type="date" value="${s.date||''}" onchange="updateSession('${s.id}',{date:this.value})"></div><div class="field" style="margin-bottom:8px"><span>Tipo de sesión</span><input value="${esc(s.type)}" onchange="updateSession('${s.id}',{type:this.value})"></div><div class="field" style="margin-bottom:0"><span>Importe (€)</span><input type="number" inputmode="decimal" value="${s.amount}" onchange="updateSession('${s.id}',{amount:Number(this.value)}).then(render)"></div><div class="checks"><label class="check"><input type="checkbox" ${s.paid?'checked':''} onchange="updateSession('${s.id}',{paid:this.checked})"> Cobrada</label><label class="check"><input type="checkbox" ${s.commission_paid?'checked':''} onchange="updateSession('${s.id}',{commission_paid:this.checked}).then(render)"> Comisión pagada</label></div><div class="rowSub" style="margin-top:8px">Comisión tienda: ${euro(commissionFor(s))}</div></div>`).join("");
   return `<button class="back" onclick="view.clientId=null;render()">‹ Volver a clientes</button><div class="card"><div class="field"><span>Nombre</span><input value="${esc(c.name)}" onchange="updateClient('${c.id}',{name:this.value}).then(render)"></div><div class="row2"><div class="field"><span>Teléfono</span><input type="tel" value="${esc(c.phone)}" placeholder="600 00 00 00" onchange="updateClient('${c.id}',{phone:this.value})"></div><div class="field"><span>Email</span><input type="email" value="${esc(c.email)}" placeholder="nombre@email.com" onchange="updateClient('${c.id}',{email:this.value})"></div></div><div class="row2"><div class="field"><span>Tienda de origen</span><select onchange="updateClient('${c.id}',{shop_id:this.value||null}).then(render)">${shopOpts}</select></div><div class="field"><span>Etapa</span><select onchange="updateClient('${c.id}',{stage:this.value}).then(render)">${stageOpts}</select></div></div><div class="field" style="margin-bottom:0"><span>Notas</span><textarea rows="2" onchange="updateClient('${c.id}',{notes:this.value})">${esc(c.notes)}</textarea></div></div><div class="sectionHead"><h2>Sesiones</h2><button class="btn" onclick="addSession('${c.id}')">+ Sesión</button></div>${sess||'<div class="empty">Sin sesiones. Pulsa «+ Sesión».</div>'}${cs.length?`<div class="card" style="margin-top:8px;display:flex;justify-content:space-between"><strong>Total facturado</strong><strong>${euro(billed)}</strong></div>`:""}<button class="delBig" onclick="removeClient('${c.id}')">Eliminar clienta</button>`;
 }
+let shopFilter="all";
 function shopList(){
-  const cards=data.shops.map(s=>`<div class="card"><div class="field"><span>Tienda</span><input value="${esc(s.name)}" onchange="updateShop('${s.id}',{name:this.value}).then(render)"></div><div class="row2"><div class="field"><span>Contacto</span><input value="${esc(s.contact)}" onchange="updateShop('${s.id}',{contact:this.value})"></div><div class="field"><span>Teléfono</span><input type="tel" value="${esc(s.phone)}" onchange="updateShop('${s.id}',{phone:this.value})"></div></div><div class="row2"><div class="field"><span>Comisión %</span><input type="number" inputmode="decimal" value="${s.commission}" onchange="updateShop('${s.id}',{commission:Number(this.value)}).then(render)"></div><div class="field"><span>Precio especial €</span><input type="number" inputmode="decimal" value="${s.special}" onchange="updateShop('${s.id}',{special:Number(this.value)})"></div></div><div class="field" style="margin-bottom:8px"><span>Notas</span><textarea rows="2" onchange="updateShop('${s.id}',{notes:this.value})">${esc(s.notes)}</textarea></div><button class="delBig" onclick="removeShop('${s.id}')">Eliminar tienda</button></div>`).join("");
-  return `<div class="sectionHead"><h2>Tiendas socias</h2><div style="display:flex;gap:8px"><button class="btn" style="background:transparent;color:var(--ink);border:1px solid #cfc6ba" ${data.shops.length?'':'disabled'} onclick="exportShopsCSV()">CSV</button><button class="btn" onclick="addShop()">+ Tienda</button></div></div><div class="list">${cards||'<div class="empty">Sin tiendas.</div>'}</div>`;
+  const filtered = shopFilter==="all" ? data.shops : data.shops.filter(s=>(s.funnel_stage||"contactar")===shopFilter);
+  const filterBtns = `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">
+    <button class="fbtn${shopFilter==='all'?' factive':''}" onclick="shopFilter='all';render()">Todas (${data.shops.length})</button>`+
+    FUNNEL.map(f=>{const n=data.shops.filter(s=>(s.funnel_stage||"contactar")===f.id).length;
+      return `<button class="fbtn${shopFilter===f.id?' factive':''}" onclick="shopFilter='${f.id}';render()">${f.label} (${n})</button>`;
+    }).join("")+"</div>";
+
+  // Esta semana meetings
+  const now=new Date(); const day=now.getDay();
+  const mon=new Date(now); mon.setDate(now.getDate()-(day===0?6:day-1)); mon.setHours(0,0,0,0);
+  const sun=new Date(mon); sun.setDate(mon.getDate()+6); sun.setHours(23,59,59,999);
+  const weekMeetings=data.shops.filter(s=>{
+    if(!s.meeting_date) return false;
+    const d=new Date(s.meeting_date+"T00:00:00");
+    return d>=mon && d<=sun;
+  }).sort((a,b)=>a.meeting_date.localeCompare(b.meeting_date));
+  const meetBlock = weekMeetings.length ? `<div class="card" style="margin-bottom:16px">
+    <div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:10px">Reuniones esta semana</div>`+
+    weekMeetings.map(s=>{const f=funnelById(s.funnel_stage);return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-top:1px solid var(--line)"><div><div style="font-weight:600">${esc(s.name)}</div><div style="font-size:13px;color:var(--muted)">${esc(s.instagram||s.phone||'')}</div></div><div style="text-align:right"><div style="font-size:13px;font-weight:600">${s.meeting_date}</div><span class="chip" style="background:${f.color};color:${f.text}">${f.label}</span></div></div>`;}).join("")+`</div>` : "";
+
+  const rows = filtered.length ? filtered.map(s=>{
+    const f=funnelById(s.funnel_stage||"contactar");
+    const hasMeeting=s.meeting_date&&(s.funnel_stage==="reunion"||s.funnel_stage==="realizada");
+    return `<div class="row" onclick="openShop('${s.id}')">
+      <div class="rowMain">
+        <div class="rowName">${esc(s.name)}</div>
+        <div class="rowSub">${esc(s.instagram?'@'+s.instagram:(s.phone||'sin contacto'))}</div>
+        ${hasMeeting?`<div class="rowSub" style="margin-top:2px">📅 ${s.meeting_date}</div>`:''}
+      </div>
+      <div class="rowRight">
+        <span class="chip" style="background:${f.color};color:${f.text}">${f.label}</span>
+        ${s.last_contact?`<div class="rowSub" style="margin-top:4px">${s.last_contact}</div>`:''}
+      </div>
+    </div>`;
+  }).join("") : `<div class="empty">Sin tiendas en este etapa.</div>`;
+
+  return `<div class="sectionHead"><h2>Tiendas</h2><div style="display:flex;gap:8px">
+    <button class="btn" style="background:transparent;color:var(--ink);border:1px solid #cfc6ba" ${data.shops.length?'':'disabled'} onclick="exportShopsCSV()">CSV</button>
+    <button class="btn" onclick="addShop()">+ Tienda</button></div></div>
+    ${meetBlock}${filterBtns}<div class="list">${rows}</div>`;
+}
+
+let openShopId=null;
+function openShop(id){openShopId=id;view.tab="shops";render();}
+
+function shopFicha(){
+  const s=shopById(openShopId); if(!s){openShopId=null;return shopList();}
+  const f=funnelById(s.funnel_stage||"contactar");
+  const fOpts=FUNNEL.map(ft=>`<option value="${ft.id}" ${ft.id===(s.funnel_stage||"contactar")?'selected':''}>${ft.label}</option>`).join("");
+  const isSocia=s.funnel_stage==="socia";
+  const isReunion=s.funnel_stage==="reunion"||s.funnel_stage==="realizada";
+  return `<button class="back" onclick="openShopId=null;render()">‹ Volver a tiendas</button>
+  <div class="card">
+    <div class="fichaHead">
+      <input class="fichaName" value="${esc(s.name)}" onchange="updateShop('${s.id}',{name:this.value}).then(render)">
+      <span class="chip" style="background:${f.color};color:${f.text};flex-shrink:0">${f.label}</span>
+    </div>
+    <div class="field"><span>Etapa</span>
+      <select class="cell" onchange="updateShop('${s.id}',{funnel_stage:this.value}).then(render)">${fOpts}</select>
+    </div>
+    <div class="row2">
+      <div class="field"><span>Instagram</span><input class="cell" value="${esc(s.instagram||'')}" placeholder="@tienda" onchange="updateShop('${s.id}',{instagram:this.value})"></div>
+      <div class="field"><span>Teléfono / WhatsApp</span><input type="tel" class="cell" value="${esc(s.phone||'')}" onchange="updateShop('${s.id}',{phone:this.value})"></div>
+    </div>
+    <div class="row2">
+      <div class="field"><span>Contacto (nombre)</span><input class="cell" value="${esc(s.contact||'')}" onchange="updateShop('${s.id}',{contact:this.value})"></div>
+      <div class="field"><span>Último contacto</span><input type="date" class="cell" value="${s.last_contact||''}" onchange="updateShop('${s.id}',{last_contact:this.value})"></div>
+    </div>
+    ${isReunion?`<div class="field"><span>Fecha de reunión</span><input type="date" class="cell" value="${s.meeting_date||''}" onchange="updateShop('${s.id}',{meeting_date:this.value}).then(render)"></div>`:''}
+    ${isSocia?`<div class="row2">
+      <div class="field"><span>Comisión %</span><input type="number" inputmode="decimal" class="cell" value="${s.commission||15}" onchange="updateShop('${s.id}',{commission:Number(this.value)}).then(render)"></div>
+      <div class="field"><span>Precio especial €</span><input type="number" inputmode="decimal" class="cell" value="${s.special||0}" onchange="updateShop('${s.id}',{special:Number(this.value)})"></div>
+    </div>`:''}
+    <div class="field" style="margin-bottom:8px"><span>Notas</span><textarea class="cell" rows="3" onchange="updateShop('${s.id}',{notes:this.value})">${esc(s.notes||'')}</textarea></div>
+    <button class="delBig" onclick="removeShop('${s.id}')">Eliminar tienda</button>
+  </div>`;
 }
 function footer(){return `<footer>Espai Batit · Datos sincronizados en Supabase.<br>Accesible desde cualquier dispositivo con el enlace.</footer>`;}
 
